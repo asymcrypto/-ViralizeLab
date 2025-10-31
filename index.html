@@ -3,81 +3,568 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViralizeLab - AI Content Creation Tools</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>ViralizeLab - 3D AI Content Creation Suite</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        #3d-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 15, 35, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #4ecdc4;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-left: 2rem;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.2rem;
+            transition: transform 0.3s, color 0.3s;
+        }
+
+        .social-links a:hover {
+            transform: scale(1.2);
+            color: #4ecdc4;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #ff6b6b; }
+            to { text-shadow: 0 0 30px #4ecdc4, 0 0 40px #45b7d1; }
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 2rem 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Tools Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-10px) rotateX(10deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .tool-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tool-card p {
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+
+        .tool-link {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .tool-link:hover {
+            transform: scale(1.05);
+        }
+
+        /* Mission Section */
+        .mission {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 4rem 2rem;
+            margin: 4rem 0;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .mission h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .mission-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            text-align: left;
+        }
+
+        .mission-item {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+
+        .mission-item i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+        }
+
+        /* Waitlist Section */
+        .waitlist {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 4rem 0;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .waitlist h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .waitlist-form {
+            margin: 2rem 0;
+        }
+
+        .waitlist-form iframe {
+            border-radius: 15px;
+            border: none;
+        }
+
+        /* Ecosystem Section */
+        .ecosystem {
+            margin: 4rem 0;
+            text-align: center;
+        }
+
+        .ecosystem h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .ecosystem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .ecosystem-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ecosystem-card h3 {
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 15, 35, 0.9);
+            padding: 3rem 0 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .tools-grid { grid-template-columns: 1fr; }
+            .nav-links { flex-direction: column; gap: 1rem; }
+            .social-links { margin-left: 0; }
+            .hero-stats { flex-direction: column; gap: 1rem; }
+        }
+    </style>
 </head>
 <body>
+    <!-- 3D Background -->
+    <div id="3d-container"></div>
+
     <!-- Navigation -->
     <nav>
-        <div class="nav-container">
+        <div class="container nav-container">
             <div class="logo">🚀 ViralizeLab</div>
-            <a href="https://viralizelab.vercel.app" class="cta-button">Try Demo</a>
+            <div class="nav-links">
+                <a href="#tools">Tools</a>
+                <a href="#mission">Mission</a>
+                <a href="#ecosystem">Ecosystem</a>
+                <a href="#waitlist">Waitlist</a>
+                <div class="social-links">
+                    <a href="https://x.com/ViralizeLab" target="_blank" title="ViralizeLab">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://x.com/Asym_Alwali" target="_blank" title="Asym Alwali">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://x.com/GitForgeDAO" target="_blank" title="GitForgeDAO">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Create Viral Content in Seconds, Not Hours</h1>
-            <p>AI-powered tools that help creators generate stunning visuals and summaries with one click.</p>
+            <h1>Create Viral Content in 3D</h1>
+            <p>AI-powered suite of tools that transform your content creation workflow with stunning 3D visuals</p>
             
-            <!-- Waitlist Form -->
-            <div class="waitlist-form">
-                <input type="text" id="name" placeholder="Your Name" required>
-                <input type="email" id="email" placeholder="Your Email" required>
-                <button onclick="joinWaitlist()">Join Waitlist</button>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Powerful Tools</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Creators</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">AI Powered</div>
+                </div>
             </div>
-            <p class="join-count">Join 250+ creators on our waitlist</p>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <h2>Your AI Content Co-Pilot</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🐦</div>
-                    <h3>Twitter Carousel Generator</h3>
-                    <p>Turn articles into engaging carousels in 60 seconds</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">💼</div>
-                    <h3>LinkedIn Visual Creator</h3>
-                    <p>Professional quote graphics that build authority</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Meeting Summarizer</h3>
-                    <p>Transform recordings into actionable notes instantly</p>
-                </div>
+    <!-- Tools Grid -->
+    <section class="container" id="tools">
+        <div class="tools-grid">
+            <!-- Threadly -->
+            <div class="tool-card">
+                <div class="tool-icon">🧵</div>
+                <h3>Threadly</h3>
+                <p>AI-powered Twitter thread generator that creates engaging, viral content in seconds</p>
+                <a href="https://asymcrypto.github.io/Thread-Generator-/" class="tool-link" target="_blank">Launch Threadly</a>
+            </div>
+
+            <!-- Visualify -->
+            <div class="tool-card">
+                <div class="tool-icon">🎨</div>
+                <h3>Visualify</h3>
+                <p>Create stunning visual tweets and graphics that stand out in any feed</p>
+                <a href="https://asymcrypto.github.io/Visualify-/" class="tool-link" target="_blank">Launch Visualify</a>
+            </div>
+
+            <!-- Snapshot -->
+            <div class="tool-card">
+                <div class="tool-icon">📸</div>
+                <h3>Snapshot</h3>
+                <p>Beautiful follower count visuals and social media analytics displays</p>
+                <a href="https://asymcrypto.github.io/Snapshot-/" class="tool-link" target="_blank">Launch Snapshot</a>
             </div>
         </div>
     </section>
 
     <!-- Mission Section -->
-    <section class="mission">
-        <div class="container">
-            <h2>Why We're Building This</h2>
-            <blockquote>
-                "Growing up in Nigeria, I saw brilliant creators struggle with limited tools. We're building ViralizeLab to democratize professional content creation - making AI-powered design accessible to everyone, everywhere."
-            </blockquote>
-            <p><strong>Asym Alwali</strong>, Founder</p>
-        </div>
-    </section>
-
-    <!-- Final CTA -->
-    <section class="final-cta">
-        <div class="container">
-            <h2>Be First to Get Access 🎁</h2>
-            <p><strong>Early users get:</strong> Free lifetime credits + Direct input on features</p>
-            <div class="waitlist-form">
-                <input type="email" id="email2" placeholder="Your Email" required>
-                <button onclick="joinWaitlist()">Join Waitlist</button>
+    <section class="container" id="mission">
+        <div class="mission">
+            <h2>Our Mission</h2>
+            <div class="mission-content">
+                <div class="mission-item">
+                    <i class="fas fa-rocket"></i>
+                    <h3>Democratize Creation</h3>
+                    <p>Make professional content creation accessible to everyone, regardless of technical skills</p>
+                </div>
+                <div class="mission-item">
+                    <i class="fas fa-brain"></i>
+                    <h3>AI-Powered</h3>
+                    <p>Leverage cutting-edge AI to automate repetitive tasks and boost creativity</p>
+                </div>
+                <div class="mission-item">
+                    <i class="fas fa-users"></i>
+                    <h3>Community First</h3>
+                    <p>Build tools that solve real problems for creators, marketers, and founders</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <script src="script.js"></script>
+    <!-- Ecosystem Section -->
+    <section class="container" id="ecosystem">
+        <div class="ecosystem">
+            <h2>Our Ecosystem</h2>
+            <div class="ecosystem-grid">
+                <div class="ecosystem-card">
+                    <h3>🚀 ViralizeLab</h3>
+                    <p>AI-powered content creation suite for the modern creator</p>
+                    <div class="social-links" style="justify-content: center; margin-top: 1rem;">
+                        <a href="https://x.com/ViralizeLab" target="_blank">@ViralizeLab</a>
+                    </div>
+                </div>
+                <div class="ecosystem-card">
+                    <h3>⚡ GitForgeDAO</h3>
+                    <p>Revolutionizing open-source funding through decentralized development</p>
+                    <div class="social-links" style="justify-content: center; margin-top: 1rem;">
+                        <a href="https://x.com/GitForgeDAO" target="_blank">@GitForgeDAO</a>
+                    </div>
+                </div>
+                <div class="ecosystem-card">
+                    <h3>👨‍💻 Asym Alwali</h3>
+                    <p>Founder building the future of digital creation and open-source ecosystems</p>
+                    <div class="social-links" style="justify-content: center; margin-top: 1rem;">
+                        <a href="https://x.com/Asym_Alwali" target="_blank">@Asym_Alwali</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Waitlist Section -->
+    <section class="container" id="waitlist">
+        <div class="waitlist">
+            <h2>Join the Future of Content Creation</h2>
+            <p>Be among the first to access our AI-powered tools and get exclusive early access features</p>
+            
+            <div class="waitlist-form">
+                <iframe src="https://forms.gle/FowWv7fmK2619NTW6" 
+                        width="100%" 
+                        height="500" 
+                        frameborder="0" 
+                        marginheight="0" 
+                        marginwidth="0">
+                    Loading…
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ViralizeLab</h3>
+                    <p>AI-powered content creation tools for the modern digital creator.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Tools</h3>
+                    <p>Threadly - Visualify - Snapshot</p>
+                    <p>More coming soon...</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Connect</h3>
+                    <div class="social-links">
+                        <a href="https://x.com/ViralizeLab" target="_blank"><i class="fab fa-twitter"></i> @ViralizeLab</a>
+                        <a href="https://x.com/Asym_Alwali" target="_blank"><i class="fab fa-twitter"></i> @Asym_Alwali</a>
+                        <a href="https://x.com/GitForgeDAO" target="_blank"><i class="fab fa-twitter"></i> @GitForgeDAO</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ViralizeLab. Building the future of AI-powered content creation. #GitForgeDAO #ViralizeLab</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 3D Background Script -->
+    <script>
+        // Three.js 3D Background
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('3d-container').appendChild(renderer.domElement);
+
+        // Create floating geometric shapes
+        const geometry = new THREE.IcosahedronGeometry(1, 0);
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0x4ecdc4, 
+            transparent: true, 
+            opacity: 0.1,
+            wireframe: true 
+        });
+
+        const shapes = [];
+        for (let i = 0; i < 50; i++) {
+            const shape = new THREE.Mesh(geometry, material);
+            shape.position.x = Math.random() * 100 - 50;
+            shape.position.y = Math.random() * 100 - 50;
+            shape.position.z = Math.random() * 100 - 50;
+            shape.rotation.x = Math.random() * Math.PI;
+            shape.rotation.y = Math.random() * Math.PI;
+            shapes.push(shape);
+            scene.add(shape);
+        }
+
+        // Add lights
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        camera.position.z = 5;
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            shapes.forEach((shape, index) => {
+                shape.rotation.x += 0.01;
+                shape.rotation.y += 0.01;
+                shape.position.y += Math.sin(Date.now() * 0.001 + index) * 0.01;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
-                  </html>
+                                                                                                                           </html>
